@@ -13,7 +13,7 @@ pf.components <- function(etf.Symbols ="SPY", data.source="yahoo", start.date="2
   etfs <- lapply(etfs, function(x){x <- x[date.range]})
   
   return(etfs)
-}
+}  # pf.components
 
 pf.index <- function(etf.Symbols ="SPY", data.source="yahoo", weights=1, start.date="2000-01-01", end.date=Sys.Date()) {
   etfs <- pf.components(etf.Symbols = etf.Symbols, data.source = data.source, start.date = start.date, end.date = end.date)
@@ -21,5 +21,4 @@ pf.index <- function(etf.Symbols ="SPY", data.source="yahoo", weights=1, start.d
   weights <- weights / sum(weights)  # force weights to add to 1
   
   # more to come
-}  
-  
+} # pf.index
