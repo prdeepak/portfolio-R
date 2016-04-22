@@ -5,9 +5,10 @@ library(quantmod, warn.conflicts = FALSE, quietly = TRUE)
 # library(knitr, warn.conflicts = FALSE, quietly = TRUE)
 
 pf.index <- function(etf.Symbols ="SPY", data.source="yahoo", weights=1, start.date="2000-01-01", end.date=Sys.Date()) {
-  etfs <- getSymbols(Symbols = etf.Symbols, src = data.source, warnings = FALSE)
+  getSymbols(Symbols = etf.Symbols, src = data.source, warnings = FALSE)
+
   date.range <- paste(start.date, end.date, sep="::")
-  # etfs <- etfs[date.range]
+  etfs <- lapply(etf.Symbols, get)
   
   weights <- weights / sum(weights)  # force weights to add to 1
   
