@@ -17,8 +17,20 @@ pf.components <- function(etf.Symbols ="SPY", data.source="yahoo", start.date="2
 pf.index <- function(etf.Symbols ="SPY", data.source="yahoo", weights=1, start.date="2006-12-29", end.date=Sys.Date()) {
   etfs <- pf.components(etf.Symbols = etf.Symbols, data.source = data.source, start.date = start.date, end.date = end.date)
   
+  returns <- lapply(etfs, function(s){ROC(Ad(s), type="discrete")}) # daily adjusted returns
+  returnsDF <- as.data.frame(do.call(merge, returns))
+    
+  weights <- rep(weights, length.out = length(etf.Symbols))
   weights <- weights / sum(weights)  # force weights to add to 1
+
+  returnsIndex <- as.data.frame(rowSums(returnsDF * weights), drop = FALSE)
+  names(returnsIndex) <- "Change"
+
+  returnsIndex$Close <- returnsIndex$Change
+  returnsIndex$Close[1] <- 100
+  for(ii in 2:length(returnsIndex$Close)) 
+    { returnsIndex$Close[ii] <- returnsIndex$Close[ii-1] * (1 + returnsIndex$Close[ii]) }
   
-  return(etfs)
+  return(returnsIndex)
   # more to come
 } # pf.index
