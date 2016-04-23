@@ -5,7 +5,7 @@ library(quantmod, warn.conflicts = FALSE, quietly = TRUE)
 # library(knitr, warn.conflicts = FALSE, quietly = TRUE)
 
 pf.components <- function(etf.Symbols ="SPY", data.source="yahoo", start.date="2000-01-01", end.date=Sys.Date()) {
-  getSymbols(Symbols = etf.Symbols, src = data.source, warnings = FALSE)
+  getSymbols(Symbols = etf.Symbols, src = data.source, from = start.date)
   etfs <- lapply(etf.Symbols, get)
   names(etfs) <- etf.Symbols
   
