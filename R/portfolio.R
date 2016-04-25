@@ -14,14 +14,26 @@ pf.components <- function(etf.Symbols ="SPY", data.source="yahoo", start.date="2
   return(etfs)
 }  # pf.components
 
-pf.toIndex <- function(etfs) {  # normalize each ETF to start = 100
+pf.toIndex <- function(etfs) {  # normalize each ETF to firstrow.Adj or Close = 100
+  indexTo <- lapply(etfs, function(x){
+    adjustOHLC(x, use.Adjusted=TRUE)
+    if(has.Cl(x)) {as.double(Cl(x[1]))}
+    else 1
+  })
+
+  voCol <- lapply(etfs, function(x){as.integer(has.Vo(x, which=TRUE))})
+  adCol <- lapply(etfs, function(x){as.integer(has.Ad(x, which=TRUE))})
+  clCol <- lapply(etfs, function(x){as.integer(has.Cl(x, which=TRUE))})
+
   etfM <- lapply(etfs, as.matrix) 
   for(aa in 1:length(etfM)){
-    for(bb in 2:nrow(etfM[[aa]])){
-      etfM[[aa]][bb,] <- 100 * etfM[[aa]][bb,] / etfM[[aa]][1,]
+    for(bb in 1:nrow(etfM[[aa]])){
+      etfM[[aa]][bb,] <- 100 * etfM[[aa]][bb,] / indexTo[[aa]]
     }
-    etfM[[aa]][1,] <- 100
+    etfM[[aa]][,voCol[[aa]]] <- etfs[[aa]][,voCol[[aa]]]
+    etfM[[aa]][,adCol[[aa]]] <- etfM[[aa]][,clCol[[aa]]]
   }
+
   etfs <- lapply(etfM, as.xts)  
   return(etfs)
 }
