@@ -4,6 +4,30 @@ library(quantmod, warn.conflicts = FALSE, quietly = TRUE)
 # library(PerformanceAnalytics, warn.conflicts = FALSE, quietly = TRUE)
 # library(knitr, warn.conflicts = FALSE, quietly = TRUE)
 
+# from Dominik and GSee at http://stackoverflow.com/questions/12028671/merging-a-large-list-of-xts-objects
+do.call.rbind <- function(lst) {
+  while(length(lst) > 1) {
+    idxlst <- seq(from=1, to=length(lst), by=2)
+    lst <- lapply(idxlst, function(i) {
+      if(i==length(lst)) { return(lst[[i]]) }
+      return(rbind(lst[[i]], lst[[i+1]]))
+    })
+  }
+  lst[[1]]
+} # do.call.rbind
+
+do.call.cbind <- function(lst) {
+  while(length(lst) > 1) {
+    idxlst <- seq(from=1, to=length(lst), by=2)
+    lst <- lapply(idxlst, function(i) {
+      if(i==length(lst)) { return(lst[[i]]) }
+      return(cbind(lst[[i]], lst[[i+1]]))
+    })
+  }
+  lst[[1]]
+} # do.call.cbind
+
+
 pf.components <- function(etf.Symbols ="SPY", data.source="yahoo", start.date="2006-12-29", end.date=Sys.Date()) {
   etfs <- mapply(function(x,y){getSymbols(env = NULL, Symbols = x, src = y, from = start.date)}, x = etf.Symbols, y = data.source, SIMPLIFY = FALSE)
   # names(etfs) <- etf.Symbols
@@ -38,20 +62,14 @@ pf.toIndex <- function(etfs) {  # normalize each ETF to firstrow.Adj or Close = 
 
   etfs <- lapply(etfM, as.xts)  
   return(etfs)
-}
+} # pf.toIndex
 
 
 pf.createIndex <- function(etfs, weights) { # requires OHLCV data
   if (!is.OHLCV(etfs[[1]])) {stop("only works with OHLCV data for now")}
     
-  # opCol <- lapply(etfs, function(x){as.integer(has.Op(x, which=TRUE))})
-  # hiCol <- lapply(etfs, function(x){as.integer(has.Hi(x, which=TRUE))})
-  # loCol <- lapply(etfs, function(x){as.integer(has.Lo(x, which=TRUE))})
-  # clCol <- lapply(etfs, function(x){as.integer(has.Cl(x, which=TRUE))})
-  # voCol <- lapply(etfs, function(x){as.integer(has.Vo(x, which=TRUE))})
-
   x <- etfs[[1]]
-  for(bb in 1:5) { # number of OHLCV columns
+  for(bb in 1:ncol(x)) { # number of OHLCV columns
    x[,bb] <- 0
    for(aa in 1:length(etfs))
      {x[,bb] <- x[,bb] + etfs[[aa]][,bb] * weights[aa]}
@@ -62,7 +80,7 @@ pf.createIndex <- function(etfs, weights) { # requires OHLCV data
         
   etfs$Index <- x
   return(etfs) 
-}
+} # pf.createIndex
 
 
 pf.index <- function(etf.Symbols ="SPY", data.source="yahoo", weights=1, start.date="2006-12-29", end.date=Sys.Date()) {
@@ -73,10 +91,24 @@ pf.index <- function(etf.Symbols ="SPY", data.source="yahoo", weights=1, start.d
   weights <- rep(weights, length.out = length(etf.Symbols))
   weights <- weights / sum(weights)  # force weights to add to 1
   
-#  etfs <- pf.createIndex(etfs, weights)
+  etfs <- pf.createIndex(etfs, weights)
 
   #  Do I need to change these indices into returns-data?
   #  returnsDF <- data.frame(lapply(etfs, function(s){ROC(Ad(s), type="discrete")})) # daily returns -- later let user set periodicity!
 
   return(etfs)
 } # pf.index
+
+
+pf.plot <- function(etfs) {  # Thanks to http://blog.revolutionanalytics.com/2014/01/quantitative-finance-applications-in-r-plotting-xts-time-series.html
+  y <- do.call.cbind(lapply(etfs, Cl))
+  zoo.y <- as.zoo(y)
+  
+  tsRainbow <- rainbow(ncol(zoo.y))  # Set a color scheme
+
+  plot(x = zoo.y, ylab = "Cumulative Return", main = "Cumulative Returns",
+       col = tsRainbow, screens = 1)  # Plot the overlayed series
+
+  legend(x = "topleft", legend = names(zoo.y), 
+         lty = 1,col = tsRainbow)    # Set a legend in the upper left hand corner to match color to return series
+}
