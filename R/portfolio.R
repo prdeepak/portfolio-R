@@ -107,8 +107,13 @@ pf.plot <- function(etfs) {  # Thanks to http://blog.revolutionanalytics.com/201
   tsRainbow <- rainbow(ncol(zoo.y))  # Set a color scheme
 
   plot(x = zoo.y, ylab = "Cumulative Return", main = "Cumulative Returns",
-       col = tsRainbow, screens = 1)  # Plot the overlayed series
+       col = tsRainbow, screens = 1, lwd = 2)  # Plot the overlayed series
 
   legend(x = "topleft", legend = names(zoo.y), 
          lty = 1,col = tsRainbow)    # Set a legend in the upper left hand corner to match color to return series
-}
+} # pf.plot
+
+# Next steps:  add 200-day SMA; plot last year, and last 90d.  Plot SMA as thin line, same color
+# Note:  lwd sets line width; last12mo <- lapply(etfs, function(x){last(x, 250)}); 
+# apply last() only *After* you've created 200d SMA data (or there won't be enough)
+
