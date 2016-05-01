@@ -117,3 +117,26 @@ pf.plot <- function(etfs) {  # Thanks to http://blog.revolutionanalytics.com/201
 # Note:  lwd sets line width; last12mo <- lapply(etfs, function(x){last(x, 250)}); 
 # apply last() only *After* you've created 200d SMA data (or there won't be enough)
 
+# quick and dirty stuff to help me import info for Google Sheet quicker:
+dpr.Symbols <- c("GLD","GSG","DJP","jjc","dba","spy","qqq","iwm","eusa","vgk","dxj","eem","fxi","ewc","xiu.to","ewa","acwi","iyr","rwo","igf","iei","ief","tlt","pttrx","bwx","emb","lqd","jnk","ibnd","tip","xrb.to","wip","shv")
+
+dpr.Ad <- function(etfs) {
+  etfs <- lapply(etfs, to.monthly)
+  m <- do.call.cbind(lapply(etfs, Ad))
+  names(m) <- names(etfs)
+  write.csv(m, "data/Adjusted.csv")
+}
+
+dpr.Cl <- function(etfs) {
+  etfs <- lapply(etfs, to.monthly)
+  m <- do.call.cbind(lapply(etfs, Cl))
+  names(m) <- names(etfs)
+  write.csv(m, "data/Raw.csv")
+}
+
+dpr.Update <- function() {
+  etfs <- pf.components(dpr.Symbols)
+  
+  dpr.Ad(etfs)
+  dpr.Cl(etfs)
+}
