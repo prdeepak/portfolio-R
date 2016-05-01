@@ -122,6 +122,7 @@ dpr.Symbols <- c("GLD","GSG","DJP","jjc","dba","spy","qqq","iwm","eusa","vgk","d
 
 dpr.Ad <- function(etfs) {
   etfs <- lapply(etfs, to.monthly)
+
   m <- do.call.cbind(lapply(etfs, Ad)) # matrix of Adjusted only
   m[is.na(m)] <- " "
   names(m) <- names(etfs) # update names
@@ -130,6 +131,7 @@ dpr.Ad <- function(etfs) {
 
 dpr.Cl <- function(etfs) {
   etfs <- lapply(etfs, to.monthly)
+
   m <- do.call.cbind(lapply(etfs, Cl))
   m[is.na(m)] <- " "
   names(m) <- names(etfs)
@@ -138,7 +140,7 @@ dpr.Cl <- function(etfs) {
 
 dpr.Update <- function() {
   etfs <- pf.components(dpr.Symbols, start.date="2003-12-01")
-  
+
   dpr.Ad(etfs)
   dpr.Cl(etfs)
 }
