@@ -144,3 +144,38 @@ dpr.Update <- function() {
   dpr.Ad(etfs)
   dpr.Cl(etfs)
 }
+
+
+# Quandl
+library(Quandl)
+Quandl.api_key("aysDdkH-cpncQfux26A3")
+
+fut.Symbols = c("CHRIS/CME_SP1","CHRIS/CME_TY1","CHRIS/CME_GC1","CHRIS/CME_CL1","BOE/XUDLCDD")
+fut.Names = c("SP1","TY1","GC1","CL1","USDCAD")
+fut.Convert = c(FALSE, FALSE, TRUE, TRUE, FALSE)
+
+q.components <- function(fut.Symbols ="CHRIS/CME_SP1", fut.Names = fut.Symbols, start.date="1982-12-01", end.date=Sys.Date()) {
+  fut <- lapply(fut.Symbols, function(x){Quandl(x, type="xts")})
+  names(fut) <- fut.Names
+  
+  date.range <- paste(start.date, end.date, sep="::")
+  fut <- lapply(fut, function(x){x <- x[date.range]})
+  
+  return(fut)
+}  # q.components
+
+
+q.CADdata <- function(){
+  tsx <- getSymbols("^GSPTSE", env=NULL, from="1982-12-01")
+
+  f <- q.components(fut.Symbols, fut.Names=fut.Names)
+  usdcad <- f[[5]]
+
+  cad.Fut <- list(Cl(tsx), f[[2]][,6], f[[3]][,6] * usdcad, f[[4]][,6] * usdcad)
+  names(cad.Fut) <- c("TSX", "TY1", "GC1:CAD", "CL1:CAD")
+  
+  cadMatrix <- do.call.cbind(cad.Fut)
+  names(cadMatrix) <- names(cad.Fut)
+  return(cadMatrix)
+}
+
