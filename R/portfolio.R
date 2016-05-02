@@ -144,3 +144,42 @@ dpr.Update <- function() {
   dpr.Ad(etfs)
   dpr.Cl(etfs)
 }
+
+
+# Quandl
+library(Quandl)
+Quandl.api_key("aysDdkH-cpncQfux26A3")
+
+fut.Symbols = c("CHRIS/CME_SP1","CHRIS/CME_TY1","CHRIS/CME_GC1","CHRIS/CME_CL1","BOE/XUDLCDD")
+fut.Names = c("SP1","TY1","GC1","CL1","USDCAD")
+fut.Convert = c(FALSE, FALSE, TRUE, TRUE, FALSE)
+
+q.components <- function(fut.Symbols ="CHRIS/CME_SP1", fut.Names = fut.Symbols, start.date="1982-12-01", end.date=Sys.Date()) {
+  fut <- lapply(fut.Symbols, function(x){Quandl(x, type="xts")})
+  names(fut) <- fut.Names
+  
+  date.range <- paste(start.date, end.date, sep="::")
+  fut <- lapply(fut, function(x){x <- x[date.range]})
+  
+  return(fut)
+}  # q.components
+
+
+q.CADdata <- function(){
+  tsx <- getSymbols("^GSPTSE", env=NULL, from="1983-12-01")
+
+  f <- q.components(fut.Symbols, fut.Names=fut.Names, start.date="1983-12-01")
+  usdcad <- f[[5]]
+
+  cad.Fut <- list(Cl(tsx), f[[2]][,6], f[[3]][,6] * usdcad, f[[4]][,6] * usdcad)
+  names(cad.Fut) <- c("TSX", "TY1", "GC1:CAD", "CL1:CAD")
+  
+  cfm <- do.call.cbind(cad.Fut)
+  names(cfm) <- names(cad.Fut)
+
+  for(cc in 1:ncol(cfm)){  # Thanks to Jonathan Ulrich!  http://stackoverflow.com/questions/37082673/very-slow-xts-dividing-a-column-by-first-row
+    cfm[,cc] <- cfm[,cc] / drop(coredata(cfm[1,cc]))
+  }
+
+  return(100 * cfm)
+}
