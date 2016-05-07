@@ -1,7 +1,7 @@
 # Building on Adam Duncan's http://www.r-bloggers.com/monitoring-an-etf-portfolio-in-r/
 
 library(quantmod, warn.conflicts = FALSE, quietly = TRUE)
-# library(PerformanceAnalytics, warn.conflicts = FALSE, quietly = TRUE)
+library(PerformanceAnalytics, warn.conflicts = FALSE, quietly = TRUE)
 # library(knitr, warn.conflicts = FALSE, quietly = TRUE)
 
 # from Dominik and GSee at http://stackoverflow.com/questions/12028671/merging-a-large-list-of-xts-objects
